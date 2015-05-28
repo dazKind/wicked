@@ -4,6 +4,7 @@ import wicked.math.Mat44;
 import wicked.math.Vec3;
 
 class TestMathMatrix extends haxe.unit.TestCase {
+    
     public function testIdentity():Void {
         var m = new Mat44();
         this.assertTrue(m[0] == 1);
