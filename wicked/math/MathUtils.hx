@@ -9,6 +9,7 @@ class MathUtils
 
     inline public static var DEG2RAD:Float = 0.017453292519943295769236907684886;
     inline public static var RAD2DEG:Float = 57.295779513082320876798154814105;
+    inline public static var DEG2RAD_HALF:Float = 0.0087266462599716478846184538424431;
     inline public static var LN2 = 0.6931471805599453;
     inline public static var PIQUARTER = 0.7853981633974483;
     inline public static var PIHALF = 1.5707963267948966;

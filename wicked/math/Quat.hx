@@ -46,6 +46,82 @@ abstract Quat(Float32Array) from Float32Array to Float32Array {
         this[0] = _x; this[1] = _y; this[2] = _z; this[3] = _w;
     }
 
+    public static inline function createRotation(_from:Vec3, _to:Vec3):Quat {
+        var m = Math.sqrt(2.0 + 2.0 * _from.dot(_to));
+        var w = (_from * _to) * (1.0 / m);
+        return new Quat(-w.x, -w.y, -w.z, 0.5 * m);
+    }
+
+    public static inline function createFromAxisAngle(_x:Float, _y:Float, _z:Float, _angle:Float):Quat {
+        var d = new Vec3(_x, _y, _z).length();
+        var hAng:Float = _angle * 0.5;
+        var fSin:Float = Math.sin(hAng) / d;
+        return new Quat(_x*fSin, _y*fSin, _z*fSin, Math.cos(hAng));
+    }
+
+    public static inline function createFromEulers(_eulerX:Float, _eulerY:Float, _eulerZ:Float):Quat {
+        var h:Float = _eulerY * MathUtils.DEG2RAD_HALF;
+        var a:Float = _eulerZ * MathUtils.DEG2RAD_HALF;
+        var b:Float = _eulerX * MathUtils.DEG2RAD_HALF;
+        var c1:Float = Math.cos(h);
+        var s1:Float = Math.sin(h);
+        var c2:Float = Math.cos(a);
+        var s2:Float = Math.sin(a);
+        var c3:Float = Math.cos(b);
+        var s3:Float = Math.sin(b);
+        var c1c2:Float = c1*c2;
+        var s1s2:Float = s1*s2;
+        var q:Quat = new Quat(
+            c1c2*s3 + s1s2*c3,
+            s1*c2*c3 + c1*s2*s3,
+            c1*s2*c3 - s1*c2*s3,
+            c1c2*c3 - s1s2*s3
+        );
+        q.normalize();
+        return q;
+    }
+
+    inline public static function createFromMat44(_mat:Mat44):Quat {
+        var q = new Quat(0,0,0,1);
+        var froot:Float = 0;
+        var ftrace:Float = _mat[0] + _mat[5] + _mat[10];
+
+        if ( ftrace > 0.0 ) {
+            // |w| > 1/2, may as well choose w > 1/2
+            froot = Math.sqrt(ftrace + 1.0);  // 2w
+            q.w = 0.5 * froot;
+            froot = 0.5 / froot;  // 1/(4w)
+            q.x = (_mat[9] - _mat[6]) * froot;
+            q.y = (_mat[2] - _mat[8]) * froot;
+            q.z = (_mat[4] - _mat[1]) * froot;
+        } else {
+            // |w| <= 1/2
+            var s_iNext:Array<Int> = [1, 2, 0];
+            var i:Int = 0;
+            if ( _mat[5] > _mat[0] )
+                i = 1;
+            if ( _mat[10] > _mat[i*4 + i] )
+                i = 2;
+            var j:Int = s_iNext[i];
+            var k:Int = s_iNext[j];
+
+            froot = Math.sqrt(_mat[i*4 + i] - _mat[j*4 + j] - _mat[k*4 + k] + 1.0);
+
+            var apkQuat:Array<Float> = [ 0.0, 0.0, 0.0 ];
+            apkQuat[i] = 0.5 * froot;
+            
+            froot = 0.5 / froot;
+            
+            q.w = (_mat[k*4 + j]-_mat[j*4 + k]) * froot;
+            apkQuat[j] = (_mat[j*4 + i]+_mat[i*4 + j]) * froot;
+            apkQuat[k] = (_mat[k*4 + i] + _mat[i*4 + k]) * froot;
+            q.x = apkQuat[0];
+            q.y = apkQuat[1];
+            q.z = apkQuat[2];
+        }
+        return q;
+    }
+
     inline public function rotateX(_a:Float):Void {
         var halfA = _a*0.5;
         multIn(cast this, new Quat(Math.sin(halfA), 0, 0, Math.cos(halfA)));
