@@ -1,8 +1,8 @@
 package wicked.tests;
 
 class TestsMain {
-	static function main() {
-		var runner = new haxe.unit.TestRunner();
+    static function main() {
+        var runner = new haxe.unit.TestRunner();
         
         runner.add(new TestMathMatrix());
         
@@ -11,5 +11,5 @@ class TestsMain {
         #if sys
         Sys.exit(success ? 0 : 1);
         #end
-	}
+    }
 }
